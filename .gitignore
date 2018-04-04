@@ -2,6 +2,7 @@ build
 bin/Debug
 bin/Release
 bin/zeta
+bin/editor
 
 *.dir
 x64/

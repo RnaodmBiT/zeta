@@ -24,12 +24,28 @@ target_include_directories(SDL2-static PUBLIC SDL2-2.0.4/include)
 add_subdirectory(glew)
 
 # make a NANOVG project
-file(GLOB NANO_SRC nanovg/src*)
+file(GLOB NANO_SRC nanovg/src/*)
 add_library(nanovg ${NANO_SRC})
 target_include_directories(nanovg PUBLIC nanovg/src)
 
 
-add_executable(zeta main.cpp)
-target_link_libraries(zeta nanovg SDL2main SDL2-static glew ${OPENGL_LIBRARIES})
+# define the list of external libraries
+set(LIBRARIES
+    ${OPENGL_LIBRARIES}
+    SDL2-static
+    SDL2main
+    glew
+    nanovg)
 
-set_working_directory(zeta ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+# Add the common library
+file(GLOB_RECURSE COMMON_SRC common/*)
+add_library(common ${COMMON_SRC})
+target_link_libraries(common ${LIBRARIES})
+target_include_directories(common PUBLIC common)
+
+
+# Add the editor executable
+file(GLOB_RECURSE EDITOR_SRC editor/*)
+add_executable(editor ${EDITOR_SRC})
+target_link_libraries(editor common)
+set_working_directory(editor ${CMAKE_CURRENT_SOURCE_DIR}/bin)
