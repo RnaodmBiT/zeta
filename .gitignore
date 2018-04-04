@@ -1,0 +1,7 @@
+build
+bin/Debug
+bin/Release
+bin/zeta
+
+*.dir
+x64/
