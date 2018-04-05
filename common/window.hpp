@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 
 #include "canvas.hpp"
+#include "event.hpp"
 
 class Window {
 public:
@@ -18,7 +19,9 @@ public:
         glm::ivec2 size;
     };
 
-    Window(const std::string& title, int width, int height) {
+    Window() { }
+
+    void create(const std::string& title, int width, int height) {
         settings = {
             { width, height }
         };
@@ -73,9 +76,7 @@ public:
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
-                if (on_quit) {
-                    on_quit();
-                }
+                on_quit();
                 break;
 
             case SDL_WINDOWEVENT:
@@ -96,7 +97,8 @@ public:
     }
 
     // Event callbacks
-    std::function<void()> on_quit;
+    //std::function<void()> on_quit;
+    Event<> on_quit;
 
 private:
 
@@ -107,7 +109,7 @@ private:
 
     Settings settings;
 
-    SDL_Window* window;
-    SDL_GLContext gl_context;
-    Canvas canvas;
+    SDL_Window* window = nullptr;
+    SDL_GLContext gl_context = nullptr;
+    Canvas canvas = nullptr;
 };
