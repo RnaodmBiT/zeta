@@ -75,15 +75,22 @@ public:
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-            case SDL_QUIT:
-                on_quit();
-                break;
 
             case SDL_WINDOWEVENT:
                 if (event.window.type == SDL_WINDOWEVENT_RESIZED) {
                     update_resolution(event.window.data1, event.window.data2);
+                    on_resize({ event.window.data1, event.window.data2 });
                 }
                 break;
+
+            case SDL_QUIT: on_quit(); break;
+
+            case SDL_KEYDOWN: on_keydown(event.key.keysym.sym); break;
+            case SDL_KEYUP: on_keyup(event.key.keysym.sym); break;
+
+            case SDL_MOUSEBUTTONDOWN: on_buttondown(event.button.button); break;
+            case SDL_MOUSEBUTTONUP: on_buttonup(event.button.button); break;
+            case SDL_MOUSEMOTION: on_motion({ event.motion.x, event.motion.y }); break;
             }
         }
     }
@@ -97,8 +104,13 @@ public:
     }
 
     // Event callbacks
-    //std::function<void()> on_quit;
     Event<> on_quit;
+    Event<glm::ivec2> on_resize;
+
+    Event<SDL_Keycode> on_keydown, on_keyup;
+    Event<int> on_buttondown, on_buttonup;
+
+    Event<glm::ivec2> on_motion;
 
 private:
 

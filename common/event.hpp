@@ -27,7 +27,7 @@ public:
     void operator()(const Args&... args) {
         for (auto& d : delegates) {
             if (!remove.count(d.first)) {
-                d.second(std::forward<Args>(args)...);
+                d.second(args...);
             }
         }
 
