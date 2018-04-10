@@ -71,12 +71,13 @@ public:
     Element(const std::string& name, const Style& style) : name(name), style(style) { }
 
     void draw(Canvas& canvas, const Rectangle& bounds) {
-        on_draw(canvas, ElementRenderer(style), bounds);
+        auto renderer = ElementRenderer(style);
+        on_draw(canvas, renderer, bounds);
     }
 
 private:
 
-    virtual void on_draw(Canvas& canvas, ElementRenderer& r, const Rectangle& bounds) = 0;
+    virtual void on_draw(Canvas& canvas, ElementRenderer& r, const Rectangle& bounds) { }
 
     std::string name;
     const Style& style;
@@ -103,7 +104,7 @@ private:
 
 class VerticalLayout : public ILayout {
 public:
-    VerticalLayout(std::vector<Element>& children) : children(children) { }
+    VerticalLayout(const std::vector<Element>& children) : children(children) { }
 
     std::vector<Rectangle> layout(const Rectangle& bounds) {
         // todo

@@ -26,9 +26,12 @@ public:
             { width, height }
         };
 
+        SDL_Init(SDL_INIT_EVERYTHING);
+
         // Setup the window attributes
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
@@ -44,6 +47,11 @@ public:
 
         glewExperimental = true;
         glewInit();
+
+        // DEBUG: print out the OpenGL version
+        printf("OpenGL: %s\nGLSL: %s\n",
+                glGetString(GL_VERSION),
+                glGetString(GL_SHADING_LANGUAGE_VERSION));
 
         canvas = Canvas(nvgCreateGL3(NVG_STENCIL_STROKES | NVG_ANTIALIAS | NVG_DEBUG));
     }
@@ -77,7 +85,7 @@ public:
             switch (event.type) {
 
             case SDL_WINDOWEVENT:
-                if (event.window.type == SDL_WINDOWEVENT_RESIZED) {
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
                     update_resolution(event.window.data1, event.window.data2);
                     on_resize({ event.window.data1, event.window.data2 });
                 }
@@ -117,6 +125,7 @@ private:
     void update_resolution(int width, int height) {
         settings.size = { width, height };
         glViewport(0, 0, width, height);
+
     }
 
     Settings settings;
