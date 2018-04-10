@@ -1,3 +1,4 @@
+#include <memory>
 #include <window.hpp>
 
 class Table {
@@ -24,6 +25,7 @@ private:
 struct Style {
     float font_size, stroke_size, radius;
     Font font;
+    Align font_align, anchor;
     Color fill, stroke, background;
 };
 
@@ -34,6 +36,38 @@ struct Rectangle {
     glm::vec2 get_center() const {
         return (min + max) / 2.0f;
     }
+
+    float get_width() const {
+        return max.x - min.x;
+    }
+
+    float get_height() const {
+        return max.y - min.y;
+    }
+
+    glm::vec2 get_size() const {
+        return max - min;
+    }
+
+    glm::vec2 get_anchor(Align anchor) const {
+        glm::vec2 a;
+        if (anchor & Align::left) {
+            a.x = min.x;
+        } else if (anchor & Align::center) {
+            a.x = (min.x + max.x) / 2;
+        } else {
+            a.x = max.x;
+        }
+
+        if (anchor & Align::top) {
+            a.y = min.y;
+        } else if (anchor & Align::middle) {
+            a.y = (min.y + max.y) / 2;
+        } else {
+            a.y = max.y;
+        }
+        return a;
+    }
 };
 
 
@@ -42,6 +76,8 @@ class Element;
 
 class ILayout {
 public:
+    virtual std::vector<Rectangle> layout(const Rectangle& bounds) = 0;
+    virtual void draw(Canvas& canvas, const Rectangle& bounds) = 0;
 private:
 };
 
@@ -58,7 +94,7 @@ public:
     }
 
     void draw_text(Canvas& canvas, const std::string& text, const Rectangle& bounds) {
-        canvas.text(bounds.get_center(), text, style.fill, Align::center | Align::middle);
+        canvas.text(bounds.get_anchor(style.anchor), text, style.fill, style.font_align);
     }
 
 private:
@@ -84,6 +120,10 @@ private:
 };
 
 
+typedef std::shared_ptr<Element> ElementPtr;
+typedef std::vector<ElementPtr> ElementList;
+
+
 
 class Label : public Element {
 public:
@@ -104,21 +144,29 @@ private:
 
 class VerticalLayout : public ILayout {
 public:
-    VerticalLayout(const std::vector<Element>& children) : children(children) { }
+    VerticalLayout(const ElementList& children) : children(children) { }
 
-    std::vector<Rectangle> layout(const Rectangle& bounds) {
-        // todo
+    std::vector<Rectangle> layout(const Rectangle& bounds) override {
+        std::vector<Rectangle> result;
+
+        float row_height = bounds.get_height() / (float)children.size();
+        for (std::size_t i = 0; i < children.size(); ++i) {
+            result.push_back({ { bounds.min.x, bounds.min.y + i * row_height },
+                               { bounds.max.x, bounds.min.y + (i + 1) * row_height } });
+        }
+
+        return result;
     }
 
-    void draw(Canvas& canvas, const Rectangle& bounds) {
+    void draw(Canvas& canvas, const Rectangle& bounds) override {
         auto b = layout(bounds);
         for (std::size_t i = 0; i < children.size(); ++i) {
-            children[i].draw(canvas, b[i]);
+            children[i]->draw(canvas, b[i]);
         }
     }
 
 private:
-    std::vector<Element> children;
+    ElementList children;
 };
 
 
@@ -139,6 +187,15 @@ public:
 
 
     void run() {
+
+        Style label_style;
+        label_style.background = { 0, 0, 0, 0 };
+        label_style.fill = { 1, 1, 1, 1 };
+        label_style.font = bold;
+        label_style.font_size = 18;
+        label_style.font_align = Align::top | Align::left;
+        label_style.anchor = Align::top | Align::left;
+
         Style button_style;
         button_style.background = { 0.3f, 0.3f, 0.3f, 1.0f };
         button_style.fill = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -147,8 +204,16 @@ public:
         button_style.radius = 3;
         button_style.font = bold;
         button_style.font_size = 18;
+        button_style.font_align = Align::center | Align::middle;
+        button_style.anchor = Align::center | Align::middle;
 
         Label label("label", button_style, "Hello, world!");
+
+        VerticalLayout layout(ElementList{
+            std::make_shared<Label>("label 1", label_style, "Hello!"),
+            std::make_shared<Label>("label 2", label_style, "I like pie!"),
+            std::make_shared<Label>("button", button_style, "Button!")
+        });
 
 
         while (running) {
@@ -157,6 +222,9 @@ public:
             window.begin_frame();
 
             label.draw(canvas, { { 50, 50 }, { 150, 100 } });
+
+
+            layout.draw(canvas, { { 50, 150 }, { 150, 250 } });
 
             window.end_frame();
         }
