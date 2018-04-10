@@ -32,6 +32,9 @@ enum class Align : int {
 inline Align operator|(Align a, Align b) {
     return static_cast<Align>(static_cast<int>(a) | static_cast<int>(b));
 }
+inline bool operator&(Align a, Align b) {
+    return (static_cast<int>(a) & static_cast<int>(b)) > 0;
+}
 
 class Canvas {
 public:
