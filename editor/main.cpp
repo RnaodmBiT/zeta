@@ -87,13 +87,22 @@ public:
     ElementRenderer(const Style& style) : style(style) { }
 
     void draw_background(Canvas& canvas, const Rectangle& bounds) {
+        auto s = bounds.get_size();
+
+        canvas.push_state();
+        canvas.translate(bounds.get_center());
+
         canvas.begin_path();
-        canvas.rounded_rect(bounds.min, bounds.max - bounds.min, style.radius);
+        canvas.rounded_rect(-s / 2.0f, s, style.radius);
+
         canvas.fill(style.background);
         canvas.stroke(style.stroke, style.stroke_size);
+
+        canvas.pop_state();
     }
 
     void draw_text(Canvas& canvas, const std::string& text, const Rectangle& bounds) {
+        canvas.font_size(style.font_size);
         canvas.text(bounds.get_anchor(style.anchor), text, style.fill, style.font_align);
     }
 
@@ -187,21 +196,22 @@ public:
 
 
     void run() {
+        window.set_background({ 0.8f, 0.8f, 0.8f, 1.0f });
 
         Style label_style;
         label_style.background = { 0, 0, 0, 0 };
-        label_style.fill = { 1, 1, 1, 1 };
+        label_style.fill = { 0, 0, 0, 1 };
         label_style.font = bold;
         label_style.font_size = 18;
         label_style.font_align = Align::top | Align::left;
         label_style.anchor = Align::top | Align::left;
 
         Style button_style;
-        button_style.background = { 0.3f, 0.3f, 0.3f, 1.0f };
-        button_style.fill = { 1.0f, 1.0f, 1.0f, 1.0f };
-        button_style.stroke = { 0.5f, 0.5f, 0.7f, 1.0f };
-        button_style.stroke_size = 3;
-        button_style.radius = 3;
+        button_style.background = canvas.linear_gradient({ 0, -10 }, { 0, 10}, { 0.5f, 0.5f, 0.5f, 1.0f }, { 0.3f, 0.3f, 0.3f, 1.0f });
+        button_style.fill = { 0.0f, 0.0f, 0.0f, 1.0f };
+        button_style.stroke = { 0.5f, 0.5f, 0.5f, 1.0f };
+        button_style.stroke_size = 1;
+        button_style.radius = 2;
         button_style.font = bold;
         button_style.font_size = 18;
         button_style.font_align = Align::center | Align::middle;

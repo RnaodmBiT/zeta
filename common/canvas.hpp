@@ -5,9 +5,12 @@
 
 typedef int Font;
 
+typedef NVGpaint Paint;
+
 struct Color {
     Color(float r = 0.0f, float g = 0.0f, float b = 0.0f, float a = 1.0f) : c(nvgRGBAf(r, g, b, a)) { }
     Color(const glm::vec4& c) : c(nvgRGBAf(c.x, c.y, c.z, c.w)) { }
+    Color(const Paint& p) : paint(p), solid(false) { }
 
     union {
         NVGcolor c;
@@ -15,7 +18,10 @@ struct Color {
             float r, g, b, a;
         };
         glm::vec4 v;
+        Paint paint;
     };
+
+    bool solid = true;
 };
 
 enum class Align : int {
@@ -54,6 +60,16 @@ public:
         return ctx;
     }
 
+    // State operations
+
+    void push_state() {
+        nvgSave(ctx);
+    }
+
+    void pop_state() {
+        nvgRestore(ctx);
+    }
+
     // Font operations
 
 
@@ -90,6 +106,40 @@ public:
         nvgTextAlign(ctx, static_cast<int>(align));
         nvgFillColor(ctx, color.c);
         nvgText(ctx, pos.x, pos.y, text.c_str(), nullptr);
+    }
+
+
+    // Gradient operations
+
+    Color linear_gradient(const glm::vec2& p_start, const glm::vec2& p_end, const Color& c_start, const Color& c_end) {
+        return nvgLinearGradient(ctx, p_start.x, p_start.y, p_end.x, p_end.y, c_start.c, c_end.c);
+    }
+
+    Color box_gradient(const glm::vec2& p_start, const glm::vec2& size, const Color& c_start, const Color& c_end, float radius, float feather) {
+        return nvgBoxGradient(ctx, p_start.x, p_start.y, size.x, size.y, radius, feather, c_start.c, c_end.c);
+    }
+
+    Color radial_gradient(const glm::vec2& p, float start, float end, const Color& c_start, const Color& c_end) {
+        return nvgRadialGradient(ctx, p.x, p.y, start, end, c_start.c, c_end.c);
+    }
+
+
+    // Transform operations
+
+    void reset_transform() {
+        nvgResetTransform(ctx);
+    }
+
+    void translate(const glm::vec2& p) {
+        nvgTranslate(ctx, p.x, p.y);
+    }
+
+    void rotate(float r) {
+        nvgRotate(ctx, r);
+    }
+
+    void scale(const glm::vec2& s) {
+        nvgScale(ctx, s.x, s.y);
     }
 
 
@@ -148,12 +198,20 @@ public:
     }
 
     void fill(const Color& color) {
-        nvgFillColor(ctx, color.c);
+        if (color.solid) {
+            nvgFillColor(ctx, color.c);
+        } else {
+            nvgFillPaint(ctx, color.paint);
+        }
         nvgFill(ctx);
     }
 
     void stroke(const Color& color, float width) {
-        nvgStrokeColor(ctx, color.c);
+        if (color.solid) {
+            nvgStrokeColor(ctx, color.c);
+        } else {
+            nvgStrokePaint(ctx, color.paint);
+        }
         nvgStrokeWidth(ctx, width);
         nvgStroke(ctx);
     }
