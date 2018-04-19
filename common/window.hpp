@@ -48,6 +48,11 @@ public:
         glewExperimental = true;
         glewInit();
 
+        GLenum r = glGetError();
+        if (r != GL_INVALID_ENUM) {
+            printf("Error initializing GLEW\n");
+        }
+
         // DEBUG: print out the OpenGL version
         printf("OpenGL: %s\nGLSL: %s\n",
                 glGetString(GL_VERSION),
