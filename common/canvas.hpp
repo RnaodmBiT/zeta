@@ -80,26 +80,25 @@ static void to_json(json& j, const Align& a) {
         output += "right";
     }
 
-
     j = output;
 }
 
 static void from_json(const json& j, Align& a) {
     Align horizontal;
     std::string i = j;
-    if (i.find("left")) {
+    if (i.find("left") != std::string::npos) {
         horizontal = Align::left;
-    } else if (i.find("right")) {
+    } else if (i.find("right") != std::string::npos) {
         horizontal = Align::right;
     } else {
         horizontal = Align::center;
     }
 
-    if (i.find("top")) {
+    if (i.find("top") != std::string::npos) {
         a = horizontal | Align::top;
-    } else if (i.find("bottom")) {
+    } else if (i.find("bottom") != std::string::npos) {
         a = horizontal | Align::bottom;
-    } else if (i.find("baseline")) {
+    } else if (i.find("baseline") != std::string::npos) {
         a = horizontal | Align::baseline;
     } else {
         a = horizontal | Align::middle;
