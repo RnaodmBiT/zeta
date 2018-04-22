@@ -3,6 +3,8 @@
 #include <nanovg.h>
 #include <glm/glm.hpp>
 
+#include "json.hpp"
+
 typedef int Font;
 
 typedef NVGpaint Paint;
@@ -24,7 +26,23 @@ struct Color {
     bool solid = true;
 };
 
-enum class Align : int {
+static void to_json(json& j, const Color& c) {
+    if (c.solid) {
+        j = { c.r, c.g, c.b, c.a };
+    } else {
+        j = "gradient";
+    }
+}
+
+static void from_json(const json& j, Color& c) {
+    if (j.is_string()) {
+        c = { 1.0f, 1.0f, 1.0f, 1.0f }; // HACK: this needs to be fixed for gradients
+    }
+    std::vector<float> channels = j;
+    c = { channels[0], channels[1], channels[2], channels[3] };
+}
+
+enum class Align {
     left = NVG_ALIGN_LEFT,
     center = NVG_ALIGN_CENTER,
     right = NVG_ALIGN_RIGHT,
@@ -40,6 +58,52 @@ inline Align operator|(Align a, Align b) {
 }
 inline bool operator&(Align a, Align b) {
     return (static_cast<int>(a) & static_cast<int>(b)) > 0;
+}
+
+static void to_json(json& j, const Align& a) {
+    std::string output;
+    if (a & Align::top) {
+        output += "top ";
+    } else if (a & Align::middle) {
+        output += "middle ";
+    } else if (a & Align::bottom) {
+        output += "bottom ";
+    } else if (a & Align::baseline) {
+        output += "baseline ";
+    }
+
+    if (a & Align::left) {
+        output += "left";
+    } else if (a & Align::center) {
+        output += "center";
+    } else if (a & Align::right) {
+        output += "right";
+    }
+
+
+    j = output;
+}
+
+static void from_json(const json& j, Align& a) {
+    Align horizontal;
+    std::string i = j;
+    if (i.find("left")) {
+        horizontal = Align::left;
+    } else if (i.find("right")) {
+        horizontal = Align::right;
+    } else {
+        horizontal = Align::center;
+    }
+
+    if (i.find("top")) {
+        a = horizontal | Align::top;
+    } else if (i.find("bottom")) {
+        a = horizontal | Align::bottom;
+    } else if (i.find("baseline")) {
+        a = horizontal | Align::baseline;
+    } else {
+        a = horizontal | Align::middle;
+    }
 }
 
 class Canvas {

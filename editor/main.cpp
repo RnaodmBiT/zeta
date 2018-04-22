@@ -1,5 +1,6 @@
 #include <memory>
 #include <window.hpp>
+#include <ui/style.hpp>
 
 class Table {
 public:
@@ -19,14 +20,6 @@ private:
     float margin; // Margin between the edge of the window and the table.
     float spacing; // Spacing between the table cells.
     glm::ivec2 cells; // Number of cells in the grid.
-};
-
-
-struct Style {
-    float font_size, stroke_size, radius;
-    Font font;
-    Align font_align, anchor;
-    Color fill, stroke, background;
 };
 
 
@@ -192,6 +185,17 @@ public:
 
         register_event(window.on_quit, [&]() { running = false; });
 
+        Style label_style;
+        label_style.background = { 0, 0, 0, 0 };
+        label_style.fill = { 0, 0, 0, 1 };
+        label_style.font = "bold";
+        label_style.font_size = 18;
+        label_style.font_align = Align::top | Align::left;
+        label_style.anchor = Align::top | Align::left;
+
+        json j = label_style;
+        printf("label = %s\n", j.dump().c_str());
+
     }
 
 
@@ -201,18 +205,18 @@ public:
         Style label_style;
         label_style.background = { 0, 0, 0, 0 };
         label_style.fill = { 0, 0, 0, 1 };
-        label_style.font = bold;
+        label_style.font = "bold";
         label_style.font_size = 18;
         label_style.font_align = Align::top | Align::left;
         label_style.anchor = Align::top | Align::left;
 
         Style button_style;
-        button_style.background = canvas.linear_gradient({ 0, -10 }, { 0, 10}, { 0.5f, 0.5f, 0.5f, 1.0f }, { 0.3f, 0.3f, 0.3f, 1.0f });
+        button_style.background = canvas.linear_gradient({ 0, -10 }, { 0, 10}, { 0.7f, 0.7f, 0.7f, 1.0f }, { 0.5f, 0.5f, 0.5f, 1.0f });
         button_style.fill = { 0.0f, 0.0f, 0.0f, 1.0f };
         button_style.stroke = { 0.5f, 0.5f, 0.5f, 1.0f };
         button_style.stroke_size = 1;
         button_style.radius = 2;
-        button_style.font = bold;
+        button_style.font = "bold";
         button_style.font_size = 18;
         button_style.font_align = Align::center | Align::middle;
         button_style.anchor = Align::center | Align::middle;
